@@ -1,0 +1,5 @@
+streamlit
+requests
+black
+isort
+ruff
