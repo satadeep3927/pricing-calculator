@@ -88,43 +88,50 @@ AGENT_USAGE_PATTERNS = {
         "default_uses_per_month": 1,
         "tokens_per_use": 1000,
         "default_model": "google/gemma-3-12b-it",
-        "description": "Monthly curriculum analysis"
+        "description": "Monthly curriculum analysis (Organization-wide)",
+        "per_teacher": False  # This is organization-wide, not per teacher
     },
     "Content Sourcing Agent": {
         "default_uses_per_month": 1,
         "tokens_per_use": 5000,
         "default_model": "google/gemma-3-12b-it",
-        "description": "Finding lesson resources"
+        "description": "Finding lesson resources",
+        "per_teacher": True
     },
     "Planner Agent": {
         "default_uses_per_month": 4,
         "tokens_per_use": 4000,
         "default_model": "qwen/qwen3-8b",
-        "description": "Bi-weekly lesson planning"
+        "description": "Bi-weekly lesson planning",
+        "per_teacher": True
     },
     "Lesson Designer": {
         "default_uses_per_month": 4,
         "tokens_per_use": 5000,
         "default_model": "qwen/qwen3-8b",
-        "description": "Creating lesson activities"
+        "description": "Creating lesson activities",
+        "per_teacher": True
     },
     "Assessment Agent": {
         "default_uses_per_month": 4,
         "tokens_per_use": 5000,
         "default_model": "qwen/qwen3-8b",
-        "description": "Generating assessments"
+        "description": "Generating assessments",
+        "per_teacher": True
     },
     "Feedback Agent": {
         "default_uses_per_month": 4,
         "tokens_per_use": 1000,
         "default_model": "google/gemma-3-12b-it",
-        "description": "Student feedback review"
+        "description": "Student feedback review",
+        "per_teacher": True
     },
     "Slide Generation Agent": {
         "default_uses_per_month": 4,
         "tokens_per_use": 4000,
         "default_model": "openai/gpt-4.1",
-        "description": "Creating presentation slides"
+        "description": "Creating presentation slides",
+        "per_teacher": True
     }
 }
 
@@ -168,42 +175,62 @@ for agent, config in AGENT_USAGE_PATTERNS.items():
         "model": model, 
         "uses_per_month": uses_per_month,
         "tokens_per_use": tokens_per_use,
-        "total_tokens": uses_per_month * tokens_per_use
+        "total_tokens": uses_per_month * tokens_per_use,
+        "per_teacher": config.get("per_teacher", True)
     }
 
 # Calculate pricing
 total_cost_per_teacher = 0
+total_organization_cost = 0
 st.header("Pricing Breakdown")
+
 for agent, config in agent_configs.items():
     model = config["model"]
     total_tokens = config["total_tokens"]
     uses_per_month = config["uses_per_month"]
     tokens_per_use = config["tokens_per_use"]
+    is_per_teacher = config["per_teacher"]
     
     prompt_tokens = total_tokens * 0.7  # 70% prompt
     completion_tokens = total_tokens * 0.3  # 30% completion
     prompt_cost = (prompt_tokens * pricing_data[model]["prompt"])
     completion_cost = (completion_tokens * pricing_data[model]["completion"])
     total_cost = prompt_cost + completion_cost
-    total_cost_per_teacher += total_cost
     
-    st.write(f"**{agent}**: ${total_cost:.6f}/month")
+    if is_per_teacher:
+        total_cost_per_teacher += total_cost
+        cost_type = "per teacher"
+    else:
+        total_organization_cost += total_cost
+        cost_type = "organization-wide"
+    
+    st.write(f"**{agent}**: ${total_cost:.6f}/month ({cost_type})")
     st.write(f"   📊 {uses_per_month} uses × {tokens_per_use} tokens = {total_tokens:,} tokens")
     st.write(f"   💰 Prompt: {prompt_tokens:.0f} tokens @ ${prompt_cost:.6f} | Completion: {completion_tokens:.0f} tokens @ ${completion_cost:.6f}")
     st.write("---")
 
 # Total cost
-total_cost_all_teachers = total_cost_per_teacher * num_teachers
+total_teacher_costs = total_cost_per_teacher * num_teachers
+total_cost_all = total_teacher_costs + total_organization_cost
+
 st.header("Total Cost")
-st.write(f"Cost per Teacher: ${total_cost_per_teacher:.6f}")
-st.write(
-    f"Total Cost for {num_teachers} Teachers: ${total_cost_all_teachers:.2f}")
+if total_organization_cost > 0:
+    st.write(f"**Organization-wide costs**: ${total_organization_cost:.6f}/month")
+    st.write(f"**Cost per Teacher**: ${total_cost_per_teacher:.6f}/month")
+    st.write(f"**Total Teacher costs** for {num_teachers} teacher(s): ${total_teacher_costs:.6f}/month")
+    st.write("---")
+    st.write(f"**🎯 TOTAL MONTHLY COST**: ${total_cost_all:.2f}")
+else:
+    st.write(f"Cost per Teacher: ${total_cost_per_teacher:.6f}")
+    st.write(f"Total Cost for {num_teachers} Teachers: ${total_cost_all:.2f}")
 
 # Notes
 st.markdown("""
 ### Notes
 - Pricing is fetched in real-time from https://openrouter.ai/api/frontend/models.
 - Configure each agent by selecting model, monthly usage frequency, and tokens per use.
+- **Organization-wide agents** (like Curriculum Mapping) are charged once regardless of teacher count.
+- **Per-teacher agents** are multiplied by the number of teachers.
 - Total tokens = Uses per month × Tokens per use.
 - Assumes 70% prompt and 30% completion tokens per interaction.
 - Free models show $0 pricing; costs reflect current OpenRouter rates.
