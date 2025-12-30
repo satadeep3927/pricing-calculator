@@ -87,49 +87,49 @@ AGENT_USAGE_PATTERNS = {
     "Curriculum Mapping Agent": {
         "default_uses_per_month": 1,
         "tokens_per_use": 1000,
-        "default_model": "google/gemma-3-12b-it",
+        "default_model": "openai/gpt-4.1",
         "description": "Monthly curriculum analysis (Organization-wide)",
         "per_teacher": False  # This is organization-wide, not per teacher
     },
     "Content Sourcing Agent": {
-        "default_uses_per_month": 1,
+        "default_uses_per_month": 4,
         "tokens_per_use": 5000,
-        "default_model": "google/gemma-3-12b-it",
+        "default_model": "openai/gpt-4.1",
         "description": "Finding lesson resources",
         "per_teacher": True
     },
     "Planner Agent": {
         "default_uses_per_month": 4,
         "tokens_per_use": 4000,
-        "default_model": "qwen/qwen3-8b",
+        "default_model": "openai/gpt-4.1",
         "description": "Bi-weekly lesson planning",
         "per_teacher": True
     },
     "Lesson Designer": {
-        "default_uses_per_month": 4,
+        "default_uses_per_month": 22*2,
         "tokens_per_use": 5000,
-        "default_model": "qwen/qwen3-8b",
+        "default_model": "google/gemini-2.5-pro",
         "description": "Creating lesson activities",
         "per_teacher": True
     },
     "Assessment Agent": {
-        "default_uses_per_month": 4,
+        "default_uses_per_month": 22*2,
         "tokens_per_use": 5000,
-        "default_model": "qwen/qwen3-8b",
+        "default_model": "openai/gpt-4.1",
         "description": "Generating assessments",
         "per_teacher": True
     },
     "Feedback Agent": {
-        "default_uses_per_month": 4,
+        "default_uses_per_month": 22*2,
         "tokens_per_use": 1000,
-        "default_model": "google/gemma-3-12b-it",
+        "default_model": "openai/gpt-4.1",
         "description": "Student feedback review",
         "per_teacher": True
     },
     "Slide Generation Agent": {
-        "default_uses_per_month": 4,
+        "default_uses_per_month": 22*2,
         "tokens_per_use": 4000,
-        "default_model": "openai/gpt-4.1",
+        "default_model": "google/gemini-2.5-pro",
         "description": "Creating presentation slides",
         "per_teacher": True
     }
